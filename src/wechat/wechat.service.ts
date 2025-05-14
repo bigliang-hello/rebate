@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { NextFunction, Request, Response } from 'express';
 import * as crypto from 'crypto';
 import { ConfigService } from '@nestjs/config';
+import { parseString } from 'xml2js';
 
 @Injectable()
 export class WechatService {
@@ -21,9 +22,30 @@ export class WechatService {
         const result = hash.digest('hex');
 
         if (result === signature) {
+            this.parseXml(req);
             res.send(echostr);
         } else {
             res.status(403).send('Forbidden');
         }
+    }
+
+    async parseXml(req: Request) {
+        const buffer: any[] = [];
+        req.on('data', (chunk) => {
+            buffer.push(chunk);
+        });
+
+        req.on('end', () => {
+            const xml = Buffer.concat(buffer).toString('utf-8');
+            parseString(xml, { trim: true }, (err, result) => {
+                if (err) {
+                    Logger.error(err);
+                } else {
+                    Logger.log(result);
+                    req.body = result;
+                }
+            });
+            req.body = xml;
+        });
     }
 }

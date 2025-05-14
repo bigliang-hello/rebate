@@ -7,7 +7,15 @@ export class WechatMiddleware implements NestMiddleware {
   constructor(private readonly wechatService: WechatService) {}
 
   use(req: Request, res: Response, next: NextFunction) {
-    Logger.log('WechatMiddleware！！！！！');
+    this.wechatService.checkSignature(req, res, next);
+  }
+}
+
+@Injectable()
+export class XmlMiddleware implements NestMiddleware {
+  constructor(private readonly wechatService: WechatService) {}
+
+  use(req: Request, res: Response, next: NextFunction) {
     this.wechatService.checkSignature(req, res, next);
   }
 }

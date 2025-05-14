@@ -2,9 +2,9 @@ import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { WechatService } from './wechat.service';
 import { WechatController } from './wechat.controller';
 import { WechatMiddleware } from './wechat.middleware';
-import { RequestModule } from 'src/request/request.module';
+import { RequestModule } from '../request/request.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from 'src/entities/user.entity';
+import { User } from '../entities/user.entity';
 
 @Module({
   imports: [

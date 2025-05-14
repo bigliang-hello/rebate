@@ -1,6 +1,6 @@
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
-import { User } from 'src/entities/user.entity';
+import { User } from '../entities/user.entity';
 
 export const getDatabaseConfig = (configService: ConfigService): TypeOrmModuleOptions => {
   return {

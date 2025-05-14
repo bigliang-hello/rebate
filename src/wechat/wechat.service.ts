@@ -6,7 +6,7 @@ import { parseString } from 'xml2js';
 import { WechatEventType, WechatMsgType } from './wechat.enum';
 import { HttpService } from '../request';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from 'src/entities/user.entity';
+import { User } from '../entities/user.entity';
 import { Repository } from 'typeorm';
 
 @Injectable()

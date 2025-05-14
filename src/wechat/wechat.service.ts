@@ -51,7 +51,8 @@ export class WechatService {
                     const { FromUserName, MsgType, Content } = xml;
                     if (MsgType === WechatMsgType.TEXT) {
                         const replyContent = this.handleTextMessage(Content);
-                        Logger.log(replyContent);
+                        Logger.warn(replyContent);
+                        console.log('回复消息:', replyContent);
                         this.sendMessage(res, xml, replyContent);
                         this.usersRepository.findOne({
                             where: {
@@ -95,7 +96,8 @@ export class WechatService {
             MsgType: 'text',
             Content: content,
         };
-        Logger.log(reply);
+        Logger.warn(reply);
+        console.log('发送微信消息:', JSON.stringify(reply));
         res.setHeader('Content-Type', 'application/xml');
         res.send(this.jsonToXml(reply));
     }

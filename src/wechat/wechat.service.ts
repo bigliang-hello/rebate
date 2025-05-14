@@ -13,7 +13,6 @@ export class WechatService {
         const signature = req.query.signature as string;
         const timestamp = req.query.timestamp as string;
         const nonce = req.query.nonce as string;
-        const echostr = req.query.echostr as string;
 
         const array = [token, timestamp, nonce].sort();
         const str = array.join('');
@@ -22,14 +21,13 @@ export class WechatService {
         const result = hash.digest('hex');
 
         if (result === signature) {
-            this.parseXml(req);
-            res.send(echostr);
+            this.parseXml(req, res, next);
         } else {
             res.status(403).send('Forbidden');
         }
     }
 
-    async parseXml(req: Request) {
+    parseXml(req: Request, res: Response, next: NextFunction) {
         const buffer: any[] = [];
         req.on('data', (chunk) => {
             buffer.push(chunk);
@@ -42,10 +40,30 @@ export class WechatService {
                     Logger.error(err);
                 } else {
                     Logger.log(result);
-                    req.body = result;
+                    const { xml } = result;
+                    const { ToUserName, FromUserName, CreateTime, MsgType, Content } = xml;
+                    const reply = {
+                        ToUserName: FromUserName,
+                        FromUserName: ToUserName,
+                        CreateTime: Date.now(),
+                        MsgType: 'text',
+                        Content: 'Hello World!',
+                    };
+                    res.setHeader('Content-Type', 'application/xml');
+                    res.send(this.jsonToXml(reply));
                 }
             });
             req.body = xml;
         });
+    }
+
+    /// 把json数据转换为微信消息的xml格式
+    jsonToXml(json: any) {
+        let xml = '<xml>';
+        for (const key in json) {
+            xml += `<${key}>${json[key]}</${key}>`;
+        }
+        xml += '</xml>';
+        return xml;
     }
 }

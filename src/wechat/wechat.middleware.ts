@@ -10,12 +10,3 @@ export class WechatMiddleware implements NestMiddleware {
     this.wechatService.checkSignature(req, res, next);
   }
 }
-
-@Injectable()
-export class XmlMiddleware implements NestMiddleware {
-  constructor(private readonly wechatService: WechatService) {}
-
-  use(req: Request, res: Response, next: NextFunction) {
-    this.wechatService.checkSignature(req, res, next);
-  }
-}

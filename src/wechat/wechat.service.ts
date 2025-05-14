@@ -3,10 +3,17 @@ import { NextFunction, Request, Response } from 'express';
 import * as crypto from 'crypto';
 import { ConfigService } from '@nestjs/config';
 import { parseString } from 'xml2js';
+import { WechatEventType, WechatMsgType } from './wechat.enum';
+import { HttpService } from '../request';
+import { InjectRepository } from '@nestjs/typeorm';
+import { User } from 'src/entities/user.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class WechatService {
-    constructor(private configService: ConfigService) {}
+    constructor(private configService: ConfigService, private readonly httpService: HttpService, 
+        @InjectRepository(User) 
+        private usersRepository: Repository<User>) {}
 
     checkSignature(req: Request, res: Response, next: NextFunction) {
         const token = this.configService.get<string>('WECHAT_TOKEN');
@@ -41,16 +48,26 @@ export class WechatService {
                 } else {
                     Logger.log(result);
                     const { xml } = result;
-                    const { ToUserName, FromUserName, CreateTime, MsgType, Content } = xml;
-                    const reply = {
-                        ToUserName: FromUserName,
-                        FromUserName: ToUserName,
-                        CreateTime: Date.now(),
-                        MsgType: 'text',
-                        Content: 'Hello World!',
-                    };
-                    res.setHeader('Content-Type', 'application/xml');
-                    res.send(this.jsonToXml(reply));
+                    const { FromUserName, MsgType, Content } = xml;
+                    if (MsgType === WechatMsgType.TEXT) {
+                        const replyContent = this.handleTextMessage(Content);
+                        this.sendMessage(res, xml, replyContent);
+                        this.usersRepository.findOne({
+                            where: {
+                                openid: FromUserName,
+                            },
+                        });
+                    } else if (MsgType === WechatMsgType.EVENT){
+                        if (Content === WechatEventType.SUBSCRIBE) { //关注
+                            
+
+                        }
+                        
+                    } else {
+                        res.send('');
+                    }
+
+                    
                 }
             });
             req.body = xml;
@@ -65,5 +82,29 @@ export class WechatService {
         }
         xml += '</xml>';
         return xml;
+    }
+
+    /// 发送微信消息
+    sendMessage(res: Response, payload: any, content: string) {
+        const { ToUserName, FromUserName } = payload;
+        const reply = {
+            ToUserName: FromUserName,
+            FromUserName: ToUserName,
+            CreateTime: Date.now(),
+            MsgType: 'text',
+            Content: content,
+        };
+        res.setHeader('Content-Type', 'application/xml');
+        res.send(this.jsonToXml(reply));
+    }
+
+    /// 处理微信文本消息
+    handleTextMessage(content: string) :string {
+        return '11';
+    }
+
+    /// 获取商品token
+    private async getTaoToken() {
+        
     }
 }

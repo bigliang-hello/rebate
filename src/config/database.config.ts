@@ -1,11 +1,12 @@
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
+import { User } from 'src/entities/user.entity';
 
 export const getDatabaseConfig = (configService: ConfigService): TypeOrmModuleOptions => {
   return {
     type: 'postgres',
     url: configService.get<string>('POSTGRES_URL'),
-    entities: [__dirname + '/../**/*.entity{.ts,.js}'],
+    entities: [User],
     retryAttempts: 3,
     ssl: true, 
     extra: {

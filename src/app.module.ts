@@ -5,6 +5,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { WechatModule } from './wechat/wechat.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { getDatabaseConfig } from './config/database.config';
+import { TestModule } from './test/test.module';
 
 @Module({
   imports: [
@@ -16,7 +17,8 @@ import { getDatabaseConfig } from './config/database.config';
       inject: [ConfigService],
       useFactory: getDatabaseConfig,
     }),
-    WechatModule
+    WechatModule,
+    TestModule
   ],
   controllers: [AppController],
   providers: [AppService],

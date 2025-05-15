@@ -5,10 +5,12 @@ import { WechatMiddleware } from './wechat.middleware';
 import { RequestModule } from '../request/request.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from '../entities/user.entity';
+import { TaoModule } from '../tao/tao.module';
 
 @Module({
   imports: [
     RequestModule,
+    TaoModule,
     TypeOrmModule.forFeature([User]),
   ],
   controllers: [WechatController],

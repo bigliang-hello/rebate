@@ -4,14 +4,14 @@ import * as crypto from 'crypto';
 import { ConfigService } from '@nestjs/config';
 import { parseString } from 'xml2js';
 import { WechatEventType, WechatMsgType } from './wechat.enum';
-import { HttpService } from '../request';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../entities/user.entity';
 import { Repository } from 'typeorm';
+import { TaoService } from '../tao/tao.service';
 
 @Injectable()
 export class WechatService {
-    constructor(private configService: ConfigService, private readonly httpService: HttpService, 
+    constructor(private configService: ConfigService, private readonly taoService: TaoService, 
         @InjectRepository(User) 
         private usersRepository: Repository<User>) {}
 
@@ -26,7 +26,6 @@ export class WechatService {
         const hash = crypto.createHash('sha1');
         hash.update(str);
         const result = hash.digest('hex');
-
         if (result === signature) {
             this.parseXml(req, res, next);
         } else {
@@ -42,12 +41,12 @@ export class WechatService {
 
         req.on('end', () => {
             const xml = Buffer.concat(buffer).toString('utf-8');
-            parseString(xml, { trim: true }, (err, result) => {
+            parseString(xml, { trim: true }, async (err, result) => {
                 if (err) {
                     Logger.error(err);
                 } else {
                     const { xml } = result;
-                    const { FromUserName, MsgType, Content } = xml;
+                    const { FromUserName, MsgType, Content, EventKey } = xml;
                     if (MsgType == WechatMsgType.TEXT) {
                         
                         const content = this.handleTextMessage(Content);
@@ -62,6 +61,20 @@ export class WechatService {
                         if (Content == WechatEventType.SUBSCRIBE) { //关注
                             
 
+                        } else if (Content == WechatEventType.UNSUBSCRIBE) { //取消关注
+
+                        } else if (Content == WechatEventType.CLICK) { //点击菜单
+                            if (EventKey == 'unnamed_ele_key') { 
+                                const token = await this.taoService.getEleToken(FromUserName);
+                                if (token) {
+                                    this.sendMessage(res, xml, '饿了么天天领红包:'+token);
+                                }
+                            } else if (EventKey == 'unnamed_mei_key') {
+                                const token = await this.taoService.getMeiToken(FromUserName);
+                                if (token) {
+                                    this.sendMessage(res, xml, '美团外卖红包:'+token);
+                                }
+                            }
                         }
                         
                     } else {

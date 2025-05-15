@@ -1,5 +1,6 @@
 import axios, { AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
 import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class HttpService {
@@ -11,7 +12,7 @@ export class HttpService {
     },
   });
 
-  constructor() {
+  constructor(private configService: ConfigService) {
     this.setupInterceptors();
   }
 
@@ -57,8 +58,17 @@ export class HttpService {
   }
 
   // GET 请求
-  async get<T = any>(url: string, config?: AxiosRequestConfig): Promise<T> {
+  async get<T = any>(url: string, params?: any): Promise<T> {
     try {
+      params.appkey = this.configService.get('TAO_KEY');
+      params.sid = this.configService.get('TAO_SID');
+      const config: AxiosRequestConfig = {
+        params: {
+          ...params,
+          appkey: this.configService.get('TAO_KEY'),
+          sid: this.configService.get('TAO_SID'),
+        },
+      } 
       const response = await this.instance.get<T>(url, config);
       return response.data;
     } catch (error) {

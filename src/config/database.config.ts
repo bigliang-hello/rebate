@@ -13,6 +13,7 @@ export const getDatabaseConfig = (configService: ConfigService): TypeOrmModuleOp
         rejectUnauthorized: false
       }
     },
-    synchronize: false
+    //product环境关闭同步
+    synchronize: true
   };
 };

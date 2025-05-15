@@ -7,4 +7,5 @@ export enum WechatEventType {
   SUBSCRIBE = 'subscribe',
   UNSUBSCRIBE = 'unsubscribe',
   VIEW = 'view',
+  CLICK = 'click',
 }

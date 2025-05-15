@@ -47,15 +47,24 @@ export class WechatService {
                     Logger.error(err);
                 } else {
                     const { xml } = result;
-                    const { FromUserName, MsgType, Content } = xml;
+                    const { FromUserName， ToUserName, MsgType, Content } = xml;
                     if (MsgType === WechatMsgType.TEXT) {
-                        const replyContent = this.handleTextMessage(Content);
-                        this.sendMessage(res, xml, replyContent);
-                        this.usersRepository.findOne({
-                            where: {
-                                openid: FromUserName,
-                            },
-                        });
+                        const reply = {
+                            ToUserName: FromUserName,
+                            FromUserName: ToUserName,
+                            CreateTime: Date.now(),
+                            MsgType: 'text',
+                            Content: 'ssss',
+                        };
+                        res.setHeader('Content-Type', 'application/xml');
+                        res.send(this.jsonToXml(reply));
+                        // const replyContent = this.handleTextMessage(Content);
+                        // this.sendMessage(res, xml, replyContent);
+                        // this.usersRepository.findOne({
+                        //     where: {
+                        //         openid: FromUserName,
+                        //     },
+                        // });
                     } else if (MsgType === WechatMsgType.EVENT){
                         if (Content === WechatEventType.SUBSCRIBE) { //关注
                             

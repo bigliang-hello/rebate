@@ -47,20 +47,17 @@ export class WechatService {
                     Logger.error(err);
                 } else {
                     const { xml } = result;
-                    const { FromUserName, ToUserName, MsgType, Content } = xml;
-                    
-                    
+                    const { FromUserName, MsgType, Content } = xml;
                     if (MsgType == WechatMsgType.TEXT) {
-                        const reply = {
-                            ToUserName: FromUserName,
-                            FromUserName: ToUserName,
-                            CreateTime: Date.now(),
-                            MsgType: 'text',
-                            Content: 'ssss',
-                        };
-                        res.setHeader('Content-Type', 'application/xml');
-                        res.send(this.jsonToXml(reply));
-    
+                        
+                        const content = this.handleTextMessage(Content);
+                        this.sendMessage(res, xml, content);
+                        this.usersRepository.findOne({
+                            where: {
+                                openid: FromUserName,
+                            },
+                        });
+
                     } else if (MsgType == WechatMsgType.EVENT){
                         if (Content == WechatEventType.SUBSCRIBE) { //关注
                             
@@ -68,15 +65,7 @@ export class WechatService {
                         }
                         
                     } else {
-                        const reply = {
-                            ToUserName: FromUserName,
-                            FromUserName: ToUserName,
-                            CreateTime: Date.now(),
-                            MsgType: 'text',
-                            Content: '11111',
-                        };
-                        res.setHeader('Content-Type', 'application/xml');
-                        res.send(this.jsonToXml(reply));
+                        res.send('');
                     }
 
                     
@@ -103,8 +92,8 @@ export class WechatService {
             ToUserName: FromUserName,
             FromUserName: ToUserName,
             CreateTime: Date.now(),
-            MsgType: 'text',
-            Content: 'ssss',
+            MsgType: WechatMsgType.TEXT,
+            Content: content,
         };
         res.setHeader('Content-Type', 'application/xml');
         res.send(this.jsonToXml(reply));

@@ -53,7 +53,7 @@ export class WechatService {
                         FromUserName: ToUserName,
                         CreateTime: Date.now(),
                         MsgType: 'text',
-                        Content: 'Hello World!',
+                        Content: MsgType,
                     };
                     res.setHeader('Content-Type', 'application/xml');
                     res.send(this.jsonToXml(reply));

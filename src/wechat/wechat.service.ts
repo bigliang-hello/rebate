@@ -46,14 +46,10 @@ export class WechatService {
                 if (err) {
                     Logger.error(err);
                 } else {
-                    Logger.log(result);
                     const { xml } = result;
                     const { FromUserName, MsgType, Content } = xml;
                     if (MsgType === WechatMsgType.TEXT) {
                         const replyContent = this.handleTextMessage(Content);
-                        res.send(replyContent);
-                        Logger.warn(replyContent);
-                        console.log('回复消息:', replyContent);
                         this.sendMessage(res, xml, replyContent);
                         this.usersRepository.findOne({
                             where: {
@@ -95,10 +91,8 @@ export class WechatService {
             FromUserName: ToUserName,
             CreateTime: Date.now(),
             MsgType: 'text',
-            Content: content,
+            Content: 'ssss',
         };
-        Logger.warn(reply);
-        console.log('发送微信消息:', JSON.stringify(reply));
         res.setHeader('Content-Type', 'application/xml');
         res.send(this.jsonToXml(reply));
     }

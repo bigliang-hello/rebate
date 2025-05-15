@@ -47,7 +47,7 @@ export class WechatService {
                     Logger.error(err);
                 } else {
                     const { xml } = result;
-                    const { FromUserName， ToUserName, MsgType, Content } = xml;
+                    const { FromUserName, ToUserName, MsgType, Content } = xml;
                     if (MsgType === WechatMsgType.TEXT) {
                         const reply = {
                             ToUserName: FromUserName,

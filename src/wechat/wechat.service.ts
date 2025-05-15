@@ -50,7 +50,7 @@ export class WechatService {
                     const { FromUserName, ToUserName, MsgType, Content } = xml;
                     
                     
-                    if (MsgType === WechatMsgType.TEXT) {
+                    if (MsgType == WechatMsgType.TEXT) {
                         const reply = {
                             ToUserName: FromUserName,
                             FromUserName: ToUserName,
@@ -61,8 +61,8 @@ export class WechatService {
                         res.setHeader('Content-Type', 'application/xml');
                         res.send(this.jsonToXml(reply));
     
-                    } else if (MsgType === WechatMsgType.EVENT){
-                        if (Content === WechatEventType.SUBSCRIBE) { //关注
+                    } else if (MsgType == WechatMsgType.EVENT){
+                        if (Content == WechatEventType.SUBSCRIBE) { //关注
                             
 
                         }

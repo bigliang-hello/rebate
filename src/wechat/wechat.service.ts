@@ -48,18 +48,18 @@ export class WechatService {
                 } else {
                     const { xml } = result;
                     const { FromUserName, ToUserName, MsgType, Content } = xml;
-                    const reply = {
-                        ToUserName: FromUserName,
-                        FromUserName: ToUserName,
-                        CreateTime: Date.now(),
-                        MsgType: 'text',
-                        Content: MsgType,
-                    };
-                    res.setHeader('Content-Type', 'application/xml');
-                    res.send(this.jsonToXml(reply));
+                    
                     
                     if (MsgType === WechatMsgType.TEXT) {
-                        
+                        const reply = {
+                            ToUserName: FromUserName,
+                            FromUserName: ToUserName,
+                            CreateTime: Date.now(),
+                            MsgType: 'text',
+                            Content: 'ssss',
+                        };
+                        res.setHeader('Content-Type', 'application/xml');
+                        res.send(this.jsonToXml(reply));
     
                     } else if (MsgType === WechatMsgType.EVENT){
                         if (Content === WechatEventType.SUBSCRIBE) { //关注
@@ -68,7 +68,15 @@ export class WechatService {
                         }
                         
                     } else {
-                        res.send('');
+                        const reply = {
+                            ToUserName: FromUserName,
+                            FromUserName: ToUserName,
+                            CreateTime: Date.now(),
+                            MsgType: 'text',
+                            Content: '11111',
+                        };
+                        res.setHeader('Content-Type', 'application/xml');
+                        res.send(this.jsonToXml(reply));
                     }
 
                     

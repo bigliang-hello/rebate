@@ -50,15 +50,14 @@ export class WechatService {
                     const { xml } = result;
                     const { FromUserName, MsgType, Content } = xml;
                     if (MsgType === WechatMsgType.TEXT) {
-                        const replyContent = this.handleTextMessage(Content);
-                        Logger.warn(replyContent);
-                        console.log('回复消息:', replyContent);
+                        // const replyContent = this.handleTextMessage(Content);
+                        const replyContent = 'ssss';
                         this.sendMessage(res, xml, replyContent);
-                        this.usersRepository.findOne({
-                            where: {
-                                openid: FromUserName,
-                            },
-                        });
+                        // this.usersRepository.findOne({
+                        //     where: {
+                        //         openid: FromUserName,
+                        //     },
+                        // });
                     } else if (MsgType === WechatMsgType.EVENT){
                         if (Content === WechatEventType.SUBSCRIBE) { //关注
                             
@@ -93,11 +92,9 @@ export class WechatService {
             ToUserName: FromUserName,
             FromUserName: ToUserName,
             CreateTime: Date.now(),
-            MsgType: 'text',
+            MsgType: WechatMsgType.TEXT,
             Content: content,
         };
-        Logger.warn(reply);
-        console.log('发送微信消息:', JSON.stringify(reply));
         res.setHeader('Content-Type', 'application/xml');
         res.send(this.jsonToXml(reply));
     }

@@ -65,8 +65,6 @@ export class WechatService {
                         });
 
                     } else if (MsgType == WechatMsgType.EVENT){
-                        this.sendMessage(res, xml, Event);
-                        return;
                         if (Event == WechatEventType.SUBSCRIBE) { //关注
                             
 

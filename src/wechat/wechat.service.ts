@@ -53,6 +53,8 @@ export class WechatService {
                     const { xml } = result;
                     
                     const { FromUserName, MsgType, Content, EventKey, Event } = xml;
+                    this.sendMessage(res, xml, MsgType);
+                        return;
                     if (MsgType == WechatMsgType.TEXT) {
                         
                         const content = this.handleTextMessage(Content);

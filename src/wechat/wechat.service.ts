@@ -20,7 +20,8 @@ export class WechatService {
         const signature = req.query.signature as string;
         const timestamp = req.query.timestamp as string;
         const nonce = req.query.nonce as string;
-
+        const echostr = req.query.echostr as string;
+        
         const array = [token, timestamp, nonce].sort();
         const str = array.join('');
         const hash = crypto.createHash('sha1');
@@ -28,7 +29,7 @@ export class WechatService {
         const result = hash.digest('hex');
         if (result === signature) {
             // this.parseXml(req, res, next);
-            res.send('');
+            res.send(echostr);
         } else {
             res.status(403).send('Forbidden');
         }

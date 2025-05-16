@@ -2,10 +2,17 @@ import { Injectable, Logger } from "@nestjs/common";
 import { HttpService } from "src/request/request.service";
 import { taoConfig } from "./tao.config";
 import { ConfigService } from "@nestjs/config";
+import { Record } from "src/entities/record.entity";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
+import { create } from "domain";
 
 @Injectable()
 export class TaoService {
-    constructor(private httpService: HttpService, private configService: ConfigService) {}
+    constructor(private httpService: HttpService, private configService: ConfigService,
+        @InjectRepository(Record)
+        private recordsRepository: Repository<Record>
+    ) {}
 
     async getEleToken(openid: string): Promise<string | undefined>  {
         const data = await this.httpService.get(taoConfig.eleme_api, {
@@ -35,6 +42,30 @@ export class TaoService {
         const result = JSON.parse(resultStr);
         Logger.log(result);
         return result.data.shortURL;
+    }
+
+    // 获取记录 https://www.zhetaoke.com/user/open/open_sc_publisher_get.aspx
+    async getRecords() {
+        const data = await this.httpService.get(taoConfig.record_api, {
+            relation_app: 'common',
+            info_type: '1',
+            page: 0,
+            page_size: 100
+        })  
+        const relations = data.tbk_sc_publisher_info_get_response.data.inviter_list.map_data;
+        const pids: [string] = data.tbk_sc_publisher_info_get_response.data.root_pid_channel_list.string;
+        const records: any[] = [];
+        // this.recordsRepository.clear();
+        for (const pid of pids) {
+            for (const relation of relations) {
+                records.push({
+                    pid: pid,
+                    relation_id: relation.relation_id,
+                    create_date: relation.create_date
+                })
+            }
+        }
+        this.recordsRepository.save(records);
     }
 
     async createMenus(menus: any) {

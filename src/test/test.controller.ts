@@ -27,6 +27,12 @@ export class TestController {
     return token;
   }
 
+  @Get('records')
+  async getRecords() {
+    await this.taoService.getRecords();
+    return 'ok';
+  }
+
   @Get('menu')
   async createMenu() {
     const menus = [

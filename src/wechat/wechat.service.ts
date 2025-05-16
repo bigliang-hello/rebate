@@ -53,8 +53,7 @@ export class WechatService {
                     const { xml } = result;
                     
                     const { FromUserName, MsgType, Content, EventKey, Event } = xml;
-                    this.sendMessage(res, xml, MsgType);
-                        return;
+                
                     if (MsgType == WechatMsgType.TEXT) {
                         
                         const content = this.handleTextMessage(Content);
@@ -66,7 +65,8 @@ export class WechatService {
                         });
 
                     } else if (MsgType == WechatMsgType.EVENT){
-                        
+                        this.sendMessage(res, xml, Event);
+                        return;
                         if (Event == WechatEventType.SUBSCRIBE) { //关注
                             
 

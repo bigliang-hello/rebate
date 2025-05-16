@@ -81,6 +81,8 @@ export class WechatService {
                                 if (token) {
                                     this.sendMessage(res, xml, '美团外卖红包:'+token);
                                 }
+                            } else {
+                                this.sendMessage(res, xml, EventKey);
                             }
                         }
                         

@@ -52,7 +52,7 @@ export class WechatService {
                 } else {
                     const { xml } = result;
                     
-                    const { FromUserName, MsgType, Content, EventKey } = xml;
+                    const { FromUserName, MsgType, Content, EventKey, Event } = xml;
                     if (MsgType == WechatMsgType.TEXT) {
                         
                         const content = this.handleTextMessage(Content);
@@ -64,24 +64,24 @@ export class WechatService {
                         });
 
                     } else if (MsgType == WechatMsgType.EVENT){
-                        if (Content == WechatEventType.SUBSCRIBE) { //关注
+                        
+                        if (Event == WechatEventType.SUBSCRIBE) { //关注
                             
 
-                        } else if (Content == WechatEventType.UNSUBSCRIBE) { //取消关注
+                        } else if (Event == WechatEventType.UNSUBSCRIBE) { //取消关注
 
-                        } else if (Content == WechatEventType.CLICK) { //点击菜单
-                            this.sendMessage(res, xml, EventKey);
-                            // if (EventKey == 'unnamed_ele_key') { 
-                            //     const token = await this.taoService.getEleToken(FromUserName);
-                            //     if (token) {
-                            //         this.sendMessage(res, xml, '饿了么天天领红包:'+token);
-                            //     }
-                            // } else if (EventKey == 'unnamed_mei_key') {
-                            //     const token = await this.taoService.getMeiToken(FromUserName);
-                            //     if (token) {
-                            //         this.sendMessage(res, xml, '美团外卖红包:'+token);
-                            //     }
-                            // }
+                        } else if (Event == WechatEventType.CLICK) { //点击菜单
+                            if (EventKey == 'unnamed_ele_key') { 
+                                const token = await this.taoService.getEleToken(FromUserName);
+                                if (token) {
+                                    this.sendMessage(res, xml, '饿了么天天领红包:'+token);
+                                }
+                            } else if (EventKey == 'unnamed_mei_key') {
+                                const token = await this.taoService.getMeiToken(FromUserName);
+                                if (token) {
+                                    this.sendMessage(res, xml, '美团外卖红包:'+token);
+                                }
+                            }
                         }
                         
                     } else {

@@ -27,7 +27,8 @@ export class WechatService {
         hash.update(str);
         const result = hash.digest('hex');
         if (result === signature) {
-            this.parseXml(req, res, next);
+            // this.parseXml(req, res, next);
+            res.send('');
         } else {
             res.status(403).send('Forbidden');
         }
@@ -46,6 +47,7 @@ export class WechatService {
                     Logger.error(err);
                 } else {
                     const { xml } = result;
+                    
                     const { FromUserName, MsgType, Content, EventKey } = xml;
                     if (MsgType == WechatMsgType.TEXT) {
                         

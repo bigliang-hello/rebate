@@ -28,8 +28,11 @@ export class WechatService {
         hash.update(str);
         const result = hash.digest('hex');
         if (result === signature) {
-            // this.parseXml(req, res, next);
-            res.send(echostr);
+            if (req.method == 'GET') {
+                res.send(echostr);
+            } else {
+                this.parseXml(req, res, next);
+            }
         } else {
             res.status(403).send('Forbidden');
         }
@@ -67,17 +70,18 @@ export class WechatService {
                         } else if (Content == WechatEventType.UNSUBSCRIBE) { //取消关注
 
                         } else if (Content == WechatEventType.CLICK) { //点击菜单
-                            if (EventKey == 'unnamed_ele_key') { 
-                                const token = await this.taoService.getEleToken(FromUserName);
-                                if (token) {
-                                    this.sendMessage(res, xml, '饿了么天天领红包:'+token);
-                                }
-                            } else if (EventKey == 'unnamed_mei_key') {
-                                const token = await this.taoService.getMeiToken(FromUserName);
-                                if (token) {
-                                    this.sendMessage(res, xml, '美团外卖红包:'+token);
-                                }
-                            }
+                            this.sendMessage(res, xml, EventKey);
+                            // if (EventKey == 'unnamed_ele_key') { 
+                            //     const token = await this.taoService.getEleToken(FromUserName);
+                            //     if (token) {
+                            //         this.sendMessage(res, xml, '饿了么天天领红包:'+token);
+                            //     }
+                            // } else if (EventKey == 'unnamed_mei_key') {
+                            //     const token = await this.taoService.getMeiToken(FromUserName);
+                            //     if (token) {
+                            //         this.sendMessage(res, xml, '美团外卖红包:'+token);
+                            //     }
+                            // }
                         }
                         
                     } else {

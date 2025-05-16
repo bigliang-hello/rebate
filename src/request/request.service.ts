@@ -60,8 +60,6 @@ export class HttpService {
   // GET 请求
   async get<T = any>(url: string, params?: any): Promise<T> {
     try {
-      params.appkey = this.configService.get('TAO_KEY');
-      params.sid = this.configService.get('TAO_SID');
       const config: AxiosRequestConfig = {
         params: {
           ...params,

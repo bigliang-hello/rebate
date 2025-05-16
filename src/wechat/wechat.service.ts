@@ -74,15 +74,20 @@ export class WechatService {
                             if (EventKey == 'unnamed_ele_key') { 
                                 const token = await this.taoService.getEleToken(FromUserName);
                                 if (token) {
-                                    this.sendMessage(res, xml, '饿了么天天领红包:'+token);
+                                    this.sendMessage(res, xml, '饿了么外卖红包:'+token);
                                 }
                             } else if (EventKey == 'unnamed_mei_key') {
                                 const token = await this.taoService.getMeiToken(FromUserName);
                                 if (token) {
                                     this.sendMessage(res, xml, '美团外卖红包:'+token);
                                 }
+                            } else if (EventKey == 'unnamed_jd_key') {
+                                const token = await this.taoService.getJdToken();
+                                if (token) {
+                                    this.sendMessage(res, xml, '京东外卖红包:'+token);
+                                }
                             } else {
-                                this.sendMessage(res, xml, EventKey);
+                                res.send('');
                             }
                         }
                         

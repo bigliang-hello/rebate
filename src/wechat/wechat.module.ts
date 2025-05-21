@@ -6,12 +6,13 @@ import { RequestModule } from '../request/request.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from '../entities/user.entity';
 import { TaoModule } from '../tao/tao.module';
+import { Record } from '../entities/record.entity';
 
 @Module({
   imports: [
     RequestModule,
     TaoModule,
-    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([User, Record]),
   ],
   controllers: [WechatController],
   providers: [WechatService],

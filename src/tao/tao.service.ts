@@ -6,6 +6,7 @@ import { Record } from "src/entities/record.entity";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { create } from "domain";
+import { text } from "stream/consumers";
 
 @Injectable()
 export class TaoService {
@@ -77,6 +78,24 @@ export class TaoService {
         Logger.log(menus);
         const data2 = await this.httpService.post(taoConfig.wechat_create_menu_api+'?access_token='+data.access_token, menus);
         Logger.log(data2);
+    }
+
+    async getCoupon(content: string, relationId: string, pid: string) {
+        const data = await this.httpService.get(taoConfig.coupon_api, {
+            pid: pid,
+            relation_id: relationId,
+            tkl: encodeURI(content),
+            signurl: 4
+        })  
+        return data.tbk_privilege_get_response.result.data;
+    }
+
+    async getToken(title: string, url: string) {
+        const data = await this.httpService.get(taoConfig.token_api, {
+            text: title,
+            url: url,
+        })
+        return data.model.replace('￥', '$');
     }
 
 

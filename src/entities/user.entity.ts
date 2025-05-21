@@ -8,9 +8,6 @@ export class User {
     @Column()
     openid: string;
 
-    @Column()
-    nickname: string;
-
     @Column({ nullable: true  })
     ali_phone: string;
 
@@ -19,6 +16,9 @@ export class User {
 
     @Column({ nullable: true  })
     relation_id: string;
+
+    @Column({ nullable: true  })
+    pid: string;
 
     @Column('decimal', { nullable: true, default: 0.00 })
     amount: number;

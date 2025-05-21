@@ -1,6 +1,11 @@
 export const taoConfig = {
-    // 淘宝
+    /// 淘宝
+    // 备案列表
     record_api: 'https://api.zhetaoke.com:10001/api/open_sc_publisher_get.ashx',
+    // 转链api
+    coupon_api: 'https://api.zhetaoke.com:10001/api/open_gaoyongzhuanlian_tkl.ashx',
+    // token
+    token_api: 'https://api.zhetaoke.com:10001/api/open_tkl_create.ashx',
 
     //饿了么
     eleme_api: 'https://api.zhetaoke.com:10001/api/open_eleme_generateLink.ashx',

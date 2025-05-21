@@ -8,12 +8,17 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../entities/user.entity';
 import { Repository } from 'typeorm';
 import { TaoService } from '../tao/tao.service';
+import { Record } from 'src/entities/record.entity';
+import { max } from 'rxjs';
 
 @Injectable()
 export class WechatService {
-    constructor(private configService: ConfigService, private readonly taoService: TaoService, 
-        @InjectRepository(User) 
-        private usersRepository: Repository<User>) {}
+    constructor(private configService: ConfigService, private readonly taoService: TaoService,
+        @InjectRepository(User)
+        private usersRepository: Repository<User>,
+        @InjectRepository(Record)
+        private recordsRepository: Repository<Record>,
+    ) { }
 
     checkSignature(req: Request, res: Response, next: NextFunction) {
         const token = this.configService.get<string>('WECHAT_TOKEN');
@@ -21,7 +26,7 @@ export class WechatService {
         const timestamp = req.query.timestamp as string;
         const nonce = req.query.nonce as string;
         const echostr = req.query.echostr as string;
-        
+
         const array = [token, timestamp, nonce].sort();
         const str = array.join('');
         const hash = crypto.createHash('sha1');
@@ -51,51 +56,43 @@ export class WechatService {
                     Logger.error(err);
                 } else {
                     const { xml } = result;
-                    
+
                     const { FromUserName, MsgType, Content, EventKey, Event } = xml;
-                
+
                     if (MsgType == WechatMsgType.TEXT) {
-                        
-                        const content = this.handleTextMessage(Content);
+                        const content = await this.handleTextMessage(Content, FromUserName);
                         this.sendMessage(res, xml, content);
-                        this.usersRepository.findOne({
-                            where: {
-                                openid: FromUserName,
-                            },
-                        });
-
-                    } else if (MsgType == WechatMsgType.EVENT){
+                    } else if (MsgType == WechatMsgType.EVENT) {
                         if (Event == WechatEventType.SUBSCRIBE) { //关注
-                            
-
+                            this.sendMessage(res, xml, '欢迎关注');
                         } else if (Event == WechatEventType.UNSUBSCRIBE) { //取消关注
 
                         } else if (Event == WechatEventType.CLICK) { //点击菜单
-                            if (EventKey == 'unnamed_ele_key') { 
+                            if (EventKey == 'unnamed_ele_key') {
                                 const token = await this.taoService.getEleToken(FromUserName);
                                 if (token) {
-                                    this.sendMessage(res, xml, '饿了么外卖红包:'+token);
+                                    this.sendMessage(res, xml, '饿了么外卖红包:' + token);
                                 }
                             } else if (EventKey == 'unnamed_mei_key') {
                                 const token = await this.taoService.getMeiToken(FromUserName);
                                 if (token) {
-                                    this.sendMessage(res, xml, '美团外卖红包:'+token);
+                                    this.sendMessage(res, xml, '美团外卖红包:' + token);
                                 }
                             } else if (EventKey == 'unnamed_jd_key') {
                                 const token = await this.taoService.getJdToken();
                                 if (token) {
-                                    this.sendMessage(res, xml, '京东外卖红包:'+token);
+                                    this.sendMessage(res, xml, '京东外卖红包:' + token);
                                 }
                             } else {
                                 res.send('');
                             }
                         }
-                        
+
                     } else {
                         res.send('');
                     }
 
-                    
+
                 }
             });
             req.body = xml;
@@ -127,12 +124,71 @@ export class WechatService {
     }
 
     /// 处理微信文本消息
-    handleTextMessage(content: string) :string {
-        return '11';
+    async handleTextMessage(content: string, openId: string): Promise<string> {
+        //发消息关联用户信息
+        let user = await this.usersRepository.findOne({
+            where: {
+                openid: openId
+            }
+        });
+
+        if (!user) {
+            await this.recordsRepository.manager.transaction(async (transactionalEntityManager) => {
+                const record = await this.recordsRepository.findOne({
+                    where: {
+                        is_use: false
+                    }
+                })
+                if (record) {
+                    this.usersRepository.save({
+                        openid: openId,
+                        relation_id: record.relation_id,
+                        pid: record.pid,
+                    }).then((userEntity) => {
+                        user = userEntity;
+                    })
+                    record.is_use = true;
+                    this.recordsRepository.save(record);
+                }
+            })
+        }
+        if (user) {
+            if (content.includes('jd.com') || content.includes('https://3.cn') || content.includes('【京东】')) {
+                return 'jd';
+            } else {
+                const res = await this.taoService.getCoupon(content, user.relation_id, user.pid);
+                return await this.getUserMessage(res, user);
+            }
+        }
+        return '未关联用户';
     }
 
     /// 获取商品token
-    private async getTaoToken() {
+    private async getUserMessage(res: any, user: User): Promise<string> {
+        try {
+            //有券
+            if (res.coupon_amount != '' || res.s_coupon_amount != '') {
+                const coupon = Math.max(parseFloat(res.coupon_amount), parseFloat(res.s_coupon_amount));
+                const price = parseFloat(res.zk_final_price);
+                let back = 0.0;
+                if (price > coupon) {
+                    back = parseFloat((parseFloat(res.min_commission_rate) / 100.0 * (price - coupon) * 0.7).toFixed(2));
+                } else {
+                    back = parseFloat((parseFloat(res.min_commission_rate) / 100.0 * price * 0.7).toFixed(2));
+                }
+                //淘口令
+                const token = await this.taoService.getToken(res.title, res.coupon_click_url);
+                return "1/:gift" + res.title + "\n/:rose【在售价】" + price + "元\n/:heart【优惠券】" + coupon + "元\n/:cake【预计返利】" + back + "元\n复制这条信息\n1" + token + ":// HU7679 打开【手机TaoBao】，即可查看/";
+            } else {
+                //无券
+                const click_url = res.item_url + "&relationId=" + user.relation_id + "&pid=" + user.pid;
+                const token = await this.taoService.getToken(res.title, click_url);
+                const back = parseFloat((parseFloat(res.min_commission_rate) / 100.0 * parseFloat(res.zk_final_price) * 0.7).toFixed(2));
+                return "1/:gift" + res.title + "\n/:rose【在售价】" + res.zk_final_price + "元\n/:heart【预计返利】" + back + "元\n复制这条信息\n1" + token + ":// HU7679 打开【手机TaoBao】，即可查看/";
+            }
+        } catch (error) {
+            return "";
+        }
         
     }
 }

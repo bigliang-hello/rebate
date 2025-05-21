@@ -134,21 +134,19 @@ export class WechatService {
 
         if (!user) {
             await this.recordsRepository.manager.transaction(async (transactionalEntityManager) => {
-                const record = await this.recordsRepository.findOne({
+                const record = await transactionalEntityManager.findOne(Record, {
                     where: {
                         is_use: false
                     }
                 })
                 if (record) {
-                    this.usersRepository.save({
+                    user = await transactionalEntityManager.save(User, {
                         openid: openId,
                         relation_id: record.relation_id,
                         pid: record.pid,
-                    }).then((userEntity) => {
-                        user = userEntity;
-                    })
+                    });
                     record.is_use = true;
-                    this.recordsRepository.save(record);
+                    await transactionalEntityManager.save(Record, record);
                 }
             })
         }
